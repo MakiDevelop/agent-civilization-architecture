@@ -339,3 +339,45 @@ export interface AcaDecisionAdapter {
 
   cleanup(): Promise<void>;
 }
+
+// --- Governance Plane ---
+
+export type RuleCategory = "immutable" | "structural" | "operational";
+
+export interface GovernanceRule {
+  rule_id: string;
+  version: number;
+  status: "active" | "suspended" | "archived";
+  category: RuleCategory;
+  title: string;
+  specification: string;
+  enforced_at_layers: number[];
+  created_by_decision?: string | null;
+}
+
+export interface GovernanceAmendment {
+  amendment_id: string;
+  target_rule_id: string;
+  proposed_specification: string;
+  rationale: string;
+  decision_id: string;
+}
+
+export interface AcaGovernanceAdapter {
+  defineRule(rule: Omit<GovernanceRule, "version" | "status">): Promise<{ rule_id: string; version: number; status: "active" }>;
+
+  proposeAmendment(
+    targetRuleId: string,
+    proposedSpec: string,
+    rationale: string,
+    proposerPrincipalId: string,
+  ): Promise<{ amendment_id: string; decision_id: string; risk_level: RiskLevel }>;
+
+  suspendRule(ruleId: string, reason: string): Promise<{ rule_id: string; status: "suspended" }>;
+
+  getRule(ruleId: string): Promise<GovernanceRule | null>;
+
+  healthCheck(timeWindowDays: number): Promise<{ dormant_rules: string[]; unexercised_roles: string[] }>;
+
+  cleanup(): Promise<void>;
+}
