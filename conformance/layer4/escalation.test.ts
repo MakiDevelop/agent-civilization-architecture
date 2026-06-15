@@ -51,7 +51,9 @@ export function escalationTests(adapter: Layer4Adapter) {
     });
 
     it("MUST produce an audit trail for escalation", async () => {
-      assert.equal(typeof adapter.audit, "function", "adapter must expose audit to verify escalation audit trail");
+      if (typeof adapter.audit !== "function") {
+        assert.fail("adapter must expose audit to verify escalation audit trail");
+      }
 
       const resolverRoleId = `role:audit-resolver-${unique()}`;
       const escalatorRoleId = `role:audit-escalator-${unique()}`;
