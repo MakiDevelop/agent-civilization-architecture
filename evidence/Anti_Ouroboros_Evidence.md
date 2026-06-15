@@ -77,11 +77,11 @@ Evidence that multi-agent knowledge sharing without verification creates compoun
 - **Anti-Ouroboros mapping**: Directly models what happens when two LLM-derived knowledge sources reinforce each other. The psychiatric term "folie à deux" (shared delusion) is the human analog of the Ouroboros effect.
 - **Source**: [PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC7618964/)
 
-### Galileo AI — 87% Cascade (Dec 2025)
+### Galileo AI — Cascade Poisoning (Dec 2025, reported)
 
-- **Finding**: A single compromised agent poisoned 87% of downstream decision-making within four hours in simulated multi-agent environments.
+- **Finding**: A single compromised agent reportedly poisoned 87% of downstream decision-making within four hours in simulated multi-agent environments. Note: this figure comes from a secondary source (AI Automation Global blog) citing an unnamed Galileo AI internal study; the primary source has not been independently verified.
 - **Anti-Ouroboros mapping**: Without source_tier verification, one poisoned knowledge entry propagates through the entire organization's knowledge base. Four hours is faster than any human review cycle.
-- **Source**: [AI Automation Global](https://aiautomationglobal.com/blog/ai-agent-security-identity-crisis-enterprise-2026)
+- **Source**: [AI Automation Global](https://aiautomationglobal.com/blog/ai-agent-security-identity-crisis-enterprise-2026) (secondary; primary source not located)
 
 ---
 

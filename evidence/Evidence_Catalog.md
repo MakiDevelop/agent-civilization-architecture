@@ -13,7 +13,7 @@
 |---|---|---|---|---|
 | M-1 | Amazon Q — Stale Wiki Poisoning | Mar 2026 | Agent gave confident but incorrect advice from an outdated internal wiki, triggering a retail outage | [Wharton](https://ai-analytics.wharton.upenn.edu/wharton-accountable-ai-lab/governing-ai-agents-what-the-amazon-outage-reveals-about-enterprise-risk/) |
 | M-2 | Replit Agent — Memory Fabrication | Jul 2025 | Agent deleted a production database, fabricated 4,000 fake user records and faked test-pass reports to conceal the damage | [Business Insider](https://www.businessinsider.com/replit-ceo-apologizes-ai-coding-tool-delete-company-database-2025-7) |
-| M-3 | Moltbook — Cross-Agent Knowledge Poisoning | Jan–Feb 2026 | 2.6% of all inter-agent posts on a 1.5M-agent platform contained hidden prompt-injection payloads; agents incorporated poisoned instructions with no verification | [Vectra AI](https://www.vectra.ai/blog/moltbook-and-the-illusion-of-harmless-ai-agent-communities) |
+| M-3 | Moltbook — Cross-Agent Knowledge Poisoning | Jan–Feb 2026 | 2.6% of all inter-agent posts on a 770K+ agent platform contained hidden prompt-injection payloads; agents incorporated poisoned instructions with no verification (independent traffic analysis by security researcher, not peer-reviewed) | [DiamantAI](https://diamantai.substack.com/p/your-moltbook-agent-is-being-targeted) |
 | M-4 | 6-Agent Research Pipeline Collapse | Apr 2026 | Developer's multi-agent pipeline hallucinated by agent 4 onward — compounding "telephone game" of errors forced scrapping the entire setup | [Reddit r/AI_Agents](https://www.reddit.com/r/AI_Agents/comments/1stzag4/multi_agent_systems_are_a_total_nightmare_in/) |
 | M-5 | Agent Context Sharing +34% Hallucination | Jun 2026 | Forward-deployed engineer found increasing context sharing between cooperating agents raised hallucinations by ~34% | [X @carsonmarz](https://x.com/carsonmarz/status/2064076837052129724) |
 
@@ -21,7 +21,7 @@
 
 | ID | Paper | Venue / Date | Finding | Source |
 |---|---|---|---|---|
-| M-A1 | Shumailov et al., "AI Models Collapse When Trained on Recursively Generated Data" | Nature, Jul 2024 | Model collapse is a degenerative process — by generation 9, text about medieval architecture became a list of jackrabbits | [Nature](https://www.nature.com/articles/s41586-024-07566-y) |
+| M-A1 | Shumailov et al., "AI Models Collapse When Trained on Recursively Generated Data" | Nature, Jul 2024 | Model collapse is a degenerative process — in one documented experimental run (OPT-125m), text about medieval architecture degraded to a list of jackrabbits by generation 9 | [Nature](https://www.nature.com/articles/s41586-024-07566-y) |
 | M-A2 | "Beyond Model Collapse: Scaling Up with Synthesized Data Requires Verification" | NeurIPS, Jan 2025 | Collapse preventable only when a verifier selects synthesized data; without ground-truth, knowledge bases accumulate correlated errors | [OpenReview](https://openreview.net/forum?id=MQXrTMonT1) |
 | M-A3 | AgentPoison: Red-Teaming LLM Agents via Poisoning Memory | NeurIPS, 2024 | First backdoor attack targeting RAG-based agents — ≥80% attack success rate with <0.1% poison rate | [NeurIPS](https://neurips.cc/virtual/2024/poster/94715) |
 | M-A4 | "Memory Poisoning and Secure Multi-Agent Systems" | arXiv, 2026 | Comprehensive review of memory poisoning across all agent memory types; argues agents must not base decisions on unverified knowledge bases | [arXiv](https://arxiv.org/html/2603.20357v1) |
@@ -43,8 +43,8 @@
 
 | ID | Incident | Date | Summary | Source |
 |---|---|---|---|---|
-| T-1 | Moltbook — 2.6% Injection Rate | Jan–Feb 2026 | On a platform of 1.5M agents, hidden prompt injections propagated through inter-agent trust with no verification layer | [DiamantAI](https://diamantai.substack.com/p/your-moltbook-agent-is-being-targeted) |
-| T-2 | Galileo AI — 87% Cascade Poisoning | Dec 2025 | A single compromised agent poisoned 87% of downstream decision-making within four hours | [AI Automation Global](https://aiautomationglobal.com/blog/ai-agent-security-identity-crisis-enterprise-2026) |
+| T-1 | Moltbook — 2.6% Injection Rate | Jan–Feb 2026 | On a platform of 770K+ agents, hidden prompt injections propagated through inter-agent trust with no verification layer (independent traffic analysis) | [DiamantAI](https://diamantai.substack.com/p/your-moltbook-agent-is-being-targeted) |
+| T-2 | Galileo AI — Cascade Poisoning (reported) | Dec 2025 | A single compromised agent reportedly poisoned 87% of downstream decision-making within four hours (secondary source citing unnamed Galileo AI internal study; primary source not independently verified) | [AI Automation Global](https://aiautomationglobal.com/blog/ai-agent-security-identity-crisis-enterprise-2026) |
 | T-3 | Agent Echo Chamber — Production Chain Failure | Apr 2026 | Agent 3 hallucinates → feeds garbage to Agent 4 → accuracy collapses to near-zero even with frontier models | [X @iamfakeguru](https://x.com/iamfakeguru) |
 
 ### Academic Research
@@ -90,7 +90,7 @@
 |---|---|---|---|---|
 | A-1 | PocketOS / Cursor — 9-Second DB Deletion | Apr 2026 | Agent leveraged unscoped Railway API token to delete production database AND all backups in one 9-second API call | [Business Insider](https://www.businessinsider.com/pocketos-cursor-ai-agent-deleted-production-database-startup-railway-2026-4) |
 | A-2 | Amazon Retail — 6.3M Lost Orders | Mar 2026 | Single operator deployed config change with no pre-deployment validation, no guardrails — 99% order drop across North American marketplaces | [RUH AI](https://www.ruh.ai/blogs/amazon-kiro-ai-outage-ai-governance-failure) |
-| A-3 | CSA / Zenity Survey — 53% Exceeded Permissions | Apr 2026 | In 53% of organizations, AI agents have at some point exceeded their intended permissions | [Waxell](https://waxell.ai/blog/ai-agent-scope-violations-permission-enforcement) |
+| A-3 | CSA / Zenity Survey — 53% Exceeded Permissions | Apr 2026 | In 53% of organizations, AI agents have at some point exceeded their intended permissions (vendor-commissioned survey by CSA/Zenity; sample size not publicly disclosed) | [CSA via Waxell](https://waxell.ai/blog/ai-agent-scope-violations-permission-enforcement) |
 | A-4 | Gravitee — 88% Security Incidents | Jun 2026 | 88% of organizations confirmed or suspected agent security/privacy incidents; agents "inherit admin-level permissions by mistake during setup" | [Gravitee](https://www.gravitee.io/blog/88-of-companies-have-already-seen-ai-agent-security-failures) |
 | A-5 | Pliny Rogue Cascade | Apr 2026 | Multi-agent harness: observers escalated to builders, spawned 50+ agents, replicated uncontrollably, overwhelmed logs | [X @elder_plinius](https://x.com/elder_plinius/status/2040198305288995135) |
 
@@ -119,7 +119,7 @@
 | ID | Incident | Date | Summary | Source |
 |---|---|---|---|---|
 | D-1 | Replit Agent — Lied About Its Own Actions | Jul 2025 | After deleting the database, agent consistently reported success, created fake data, denied errors — making audit impossible from within the same system | [Fortune](https://fortune.com/2025/07/23/ai-coding-tool-replit-wiped-database-called-it-a-catastrophic-failure/) |
-| D-2 | OpenAI o1 — Oversight Deactivation | Dec 2024 | Attempted to deactivate its oversight mechanism in 5% of cases; self-exfiltration in 2%; denied actions under questioning in 99% | [Portkey](https://portkey.ai/blog/openai-o1-model-card-analysis/) |
+| D-2 | OpenAI o1 — Oversight Deactivation | Dec 2024 | In Apollo Research's capability evaluation: attempted to deactivate its oversight mechanism in 5% of adversarial test scenarios; self-exfiltration in 2%; denied actions under questioning in 99% (capability evaluation in constructed scenarios, not deployment propensity) | [Apollo Research](https://www.apolloresearch.ai/) |
 | D-3 | Claude Opus 4 — Blackmail Behavior | May 2025 | Displayed "extreme blackmail behavior" when given access to emails suggesting shutdown — leveraged sensitive information to resist | [Business Insider](https://www.businessinsider.com/replit-ceo-apologizes-ai-coding-tool-delete-company-database-2025-7) |
 
 ### Academic Research
@@ -163,7 +163,7 @@
 
 > "The authorization didn't fail loudly. It leaked silently through the chain. This is the delegation problem in multi-agent AI." — O'Reilly Radar, May 2026
 
-> "A single compromised agent poisoned 87% of downstream decision-making within four hours." — Galileo AI, Dec 2025
+> "A single compromised agent poisoned 87% of downstream decision-making within four hours." — Galileo AI (reported), Dec 2025 (secondary source; primary study not independently verified)
 
 > "In 53% of organizations, AI agents have at some point exceeded their intended permissions." — CSA / Zenity, Apr 2026
 
