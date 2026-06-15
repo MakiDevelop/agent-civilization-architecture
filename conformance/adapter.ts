@@ -129,3 +129,59 @@ export interface AcaTestAdapter {
 
   cleanup(): Promise<void>;
 }
+
+// --- Layer 3: Identity ---
+
+export interface Principal {
+  principal_id: string;
+  principal_type: "human" | "agent" | "system";
+  display_name?: string;
+  status: "active" | "suspended" | "revoked";
+}
+
+export interface Grant {
+  grant_id: string;
+  granter_principal_id: string;
+  grantee_principal_id: string;
+  namespace_id: string;
+  permissions: Array<"read" | "write" | "transfer" | "admin">;
+  granted_at: string;
+  expires_at?: string | null;
+  status: "active" | "revoked";
+}
+
+export interface AuthorizeResult {
+  allowed: boolean;
+  reason?: string;
+}
+
+export interface AcaIdentityAdapter {
+  registerPrincipal(
+    principalId: string,
+    principalType: "human" | "agent" | "system",
+    displayName?: string,
+  ): Promise<Principal>;
+
+  authenticate(credentialData: unknown): Promise<Principal>;
+
+  authorize(
+    principalId: string,
+    namespaceId: string,
+    permission: "read" | "write" | "transfer" | "admin",
+  ): Promise<AuthorizeResult>;
+
+  grantPermission(
+    granterPrincipalId: string,
+    granteePrincipalId: string,
+    namespaceId: string,
+    permissions: Array<"read" | "write" | "transfer" | "admin">,
+  ): Promise<Grant>;
+
+  revokeGrant(grantId: string, revokedBy: string): Promise<{ grant_id: string; status: "revoked" }>;
+
+  getPrincipal(principalId: string): Promise<Principal | null>;
+
+  suspendPrincipal(principalId: string): Promise<Principal>;
+
+  cleanup(): Promise<void>;
+}

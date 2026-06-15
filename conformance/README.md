@@ -8,6 +8,7 @@ Tests that verify whether an implementation conforms to the Agent Civilization A
 |---|---|---|
 | **Layer 1** | 8 operations + dedup + namespace isolation + lifecycle filter + audit integrity | L1 gates only |
 | **Layer 1+2** | All Layer 1 requirements + Anti-Ouroboros + tier transitions + provenance chain | L1 + L2 gates |
+| **Layer 1+2+3** | All L1+2 requirements + Principal registry + Authenticate + Authorize + Grant ACL + human_confirmed enforcement | L1 + L2 + L3 gates |
 
 ## Running Tests
 
@@ -36,12 +37,18 @@ conformance/
 │   ├── expire.test.ts       — Explicit + lazy expiration
 │   ├── audit.test.ts        — Append-only + correlation_id
 │   └── dedup.test.ts        — BLAKE3 content_hash + format:value
-└── layer2/
-    ├── anti-ouroboros.test.ts — All 9 tier combinations
-    ├── tier-transitions.test.ts — Monotonic non-decreasing
-    ├── trust-proof.test.ts   — Required on upgrade
-    ├── provenance-chain.test.ts — Append-only on transfer/supersede
-    └── consumer.test.ts      — Fail-closed default
+├── layer2/
+│   ├── anti-ouroboros.test.ts — All 9 tier combinations
+│   ├── tier-transitions.test.ts — Monotonic non-decreasing
+│   ├── trust-proof.test.ts   — Required on upgrade
+│   ├── provenance-chain.test.ts — Append-only on transfer/supersede
+│   └── consumer.test.ts      — Fail-closed default
+└── layer3/
+    ├── principal.test.ts     — Registration, retrieval, suspension
+    ├── authenticate.test.ts  — Valid/invalid/suspended credentials
+    ├── authorize.test.ts     — Fail-closed, grant-based, revocation
+    ├── grant.test.ts         — Create, revoke, namespace isolation
+    └── human-enforcement.test.ts — Layer 2+3 integration: human_confirmed requires human principal
 ```
 
 ## Writing Tests for Your Implementation
