@@ -75,7 +75,7 @@ The institutions that human civilizations invented to cross this threshold are s
 | Citizenship & Identity | Establish who belongs and who can act | **Identity Layer** | Namespace ACL (minimal) |
 | Parliament & Judiciary | Define who has authority to decide | **Authority Layer** | Not yet formalized |
 | Legislative Process | Structure how decisions are proposed, debated, and ratified | **Decision Layer** | Not yet formalized |
-| Constitution | Meta-rules that govern how rules change | **Constitution Layer** | Not yet formalized |
+| Constitution | Meta-rules that govern how rules change | **Constitution Plane** | Not yet formalized |
 
 This parallel is not a metaphor. It is a design guide. Human civilizations converged on these institutions because they are the minimal set required for large-scale coordination without collapse. Agent civilizations will converge on the same set, or they will fail in the same ways human societies fail without them.
 

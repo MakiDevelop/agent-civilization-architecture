@@ -295,7 +295,7 @@ The Memory Layer is storage-agnostic. Implementations MAY use any persistence ba
 
 MemoryCells are serialized as JSON (RFC 8259). Implementations MUST accept and produce UTF-8 encoded JSON. Field ordering is not significant. Unknown fields MUST be preserved on read and re-emitted on write (forward compatibility).
 
-The canonical form for content-hash computation is `content.value` as raw UTF-8 bytes, not the JSON-serialized form.
+The canonical form for content-hash computation is `content.format + ":" + content.value` as raw UTF-8 bytes (see §4.1), not the JSON-serialized form of the MemoryCell.
 
 ---
 
@@ -304,10 +304,15 @@ The canonical form for content-hash computation is `content.value` as raw UTF-8 
 An implementation is **ACA Layer 1 conformant** if it:
 
 1. Correctly serializes and deserializes MemoryCell and AuditEvent structures.
-2. Implements all six operations (write, read, supersede, revoke, transfer, audit) with the specified contracts.
-3. Enforces all four governance gates by default.
-4. Maintains append-only audit log integrity.
+2. Implements all eight operations (write, read, supersede, revoke, tier_upgrade, transfer, expire, audit) with the specified contracts.
+3. Enforces Layer 1 governance gates (dedup §4.1, namespace isolation §4.3, lifecycle filter §4.4) by default.
+4. Maintains append-only audit log integrity, including `operation: rejected` events for denied writes.
 5. Passes the Layer 1 conformance test suite (forthcoming).
+
+An implementation is **ACA Layer 1+2 conformant** if it additionally:
+
+6. Enforces the Anti-Ouroboros gate (§4.2) as a mandatory write-path check.
+7. Satisfies all Layer 2 conformance criteria (see [Layer 2 §5](layer2-trust.md#5-conformance)).
 
 ---
 

@@ -33,7 +33,7 @@ Every MemoryCell carries a `source.tier` field that classifies the provenance of
 **Invariants**:
 - Every MemoryCell MUST have exactly one `source.tier`.
 - Tier MUST NOT be upgraded without a verifiable event (see §2.2 TrustProof).
-- Tier MUST be preserved on transfer (Layer 1 §3.5). A `raw_source` memory transferred to another namespace remains `raw_source`.
+- Tier MUST be preserved on transfer (Layer 1 §3.6). A `raw_source` memory transferred to another namespace remains `raw_source`.
 
 ### 2.2 TrustProof
 
@@ -58,7 +58,7 @@ A TrustProof is an optional attestation attached to a MemoryCell that provides s
 
 ### 2.3 ProvenanceChain
 
-When a MemoryCell is transferred (Layer 1 §3.5) or superseded (Layer 1 §3.3), its trust history must be preserved. The ProvenanceChain records the full lineage.
+When a MemoryCell is transferred (Layer 1 §3.6) or superseded (Layer 1 §3.3), its trust history must be preserved. The ProvenanceChain records the full lineage.
 
 ```json
 {
@@ -121,7 +121,7 @@ When a MemoryCell is transferred (Layer 1 §3.5) or superseded (Layer 1 §3.3), 
 | **Pre-conditions** | Both records exist; target is `active`. |
 | **Processing** | Check `new.source.tier` and `target.source.tier`. If both are `llm_derived`, reject. |
 | **Output** | `AntiOuroborosError { new_memory_id, target_memory_id, message }` |
-| **Failure mode** | The write is rejected. No state change occurs. No audit event is written for the rejected attempt. |
+| **Failure mode** | The write is rejected. No state change occurs. An AuditEvent with `operation: rejected` MUST be appended (per Layer 1 §3.1 Mandatory Audit for rejected writes). |
 
 **Rationale**: In human civilization, knowledge is anchored to external reality — empirical observation, physical evidence, consensus of independent witnesses. AI agents have no such anchor. An agent can cite its own previous output as evidence, effectively creating a closed loop where generated knowledge validates generated knowledge. Over iterations, these loops amplify errors and hallucinations until fiction becomes organizational "truth."
 
@@ -144,7 +144,7 @@ The closest academic work is the NeurIPS 2025 paper "Safeguarding LLM Multi-Agen
 
 ### 3.3 Transfer Trust Preservation
 
-When a MemoryCell is transferred (Layer 1 §3.5):
+When a MemoryCell is transferred (Layer 1 §3.6):
 
 1. The `source.tier` of the new record MUST equal the `source.tier` of the original.
 2. The ProvenanceChain of the new record MUST include the original's chain plus a new `transfer` transition.
