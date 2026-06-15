@@ -276,3 +276,66 @@ export interface AcaAuthorityAdapter {
 
   cleanup(): Promise<void>;
 }
+
+// --- Layer 5: Decision ---
+
+export type DecisionStatus = "proposed" | "under_review" | "ratified" | "in_effect" | "superseded" | "revoked";
+export type RiskLevel = "low" | "medium" | "high" | "critical";
+
+export interface DecisionProposal {
+  assumptions: string[];
+  evidence_ids: string[];
+  risks: string[];
+  trade_offs: string[];
+  rollback_plan: string;
+  implementation_steps: string[];
+}
+
+export interface Decision {
+  decision_id: string;
+  title: string;
+  status: DecisionStatus;
+  risk_level: RiskLevel;
+  proposer_principal_id: string;
+  proposal: DecisionProposal;
+  reviews: IndependentReviewRecord[];
+  ratification: { ratified_by: string; rationale: string; review_addressal?: string | null } | null;
+  created_at: string;
+  effective_at?: string | null;
+  review_deadline?: string | null;
+  supersedes?: string | null;
+}
+
+export interface AcaDecisionAdapter {
+  proposeDecision(
+    title: string,
+    riskLevel: RiskLevel,
+    proposal: DecisionProposal,
+    proposerPrincipalId: string,
+  ): Promise<{ decision_id: string; status: "proposed"; risk_level: RiskLevel }>;
+
+  reviewDecision(decisionId: string): Promise<{ decision_id: string; status: "under_review"; review_deadline: string }>;
+
+  ratifyDecision(
+    decisionId: string,
+    ratifiedBy: string,
+    rationale: string,
+    reviewAddressal?: string,
+  ): Promise<{ decision_id: string; status: "ratified" }>;
+
+  vetoDecision(
+    decisionId: string,
+    vetoedBy: string,
+    reason: string,
+  ): Promise<{ decision_id: string; status: "revoked"; reason: string }>;
+
+  implementDecision(
+    decisionId: string,
+    implementedBy: string,
+    notes: string,
+  ): Promise<{ decision_id: string; status: "in_effect"; effective_at: string }>;
+
+  getDecision(decisionId: string): Promise<Decision | null>;
+
+  cleanup(): Promise<void>;
+}
