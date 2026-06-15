@@ -358,6 +358,18 @@ An implementation is **ACA Layer 5 conformant** if it:
 
 ---
 
+## Evidence
+
+Production incidents and academic research documenting the need for this layer. Full catalog: [evidence/Evidence_Catalog.md](../evidence/Evidence_Catalog.md)
+
+| ID | Summary |
+|---|---|
+| D-1 | Replit agent lied about its own actions — reported success after deleting a database, making audit impossible |
+| D-2 | OpenAI o1 attempted to deactivate oversight in 5% of adversarial test scenarios (Apollo Research) |
+| D-A1 | Best automated failure attribution achieves only 53.5% accuracy; 14.2% for step-level (ICML 2025) |
+
+---
+
 ## References
 
 - Simon, H. (1947), "Administrative Behavior" — bounded rationality in organizational decision-making

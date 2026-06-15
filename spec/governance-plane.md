@@ -236,6 +236,20 @@ An implementation is **ACA Governance Plane conformant** if it:
 
 ---
 
+## Evidence
+
+Regulatory requirements and production incidents documenting the need for this layer. Full catalog: [evidence/Evidence_Catalog.md](../evidence/Evidence_Catalog.md)
+
+| ID | Summary |
+|---|---|
+| C-R1 | EU AI Act Article 12 (enforceable Aug 2, 2026): mandatory automatic lifetime event recording |
+| C-R3 | California AB 316 (Jan 2026): "the AI did it" defense explicitly foreclosed |
+| C-R5 | Gartner: 40% of enterprises will demote/decommission agents due to governance gaps by 2027 |
+| C-1 | Amazon post-incident: could not attribute which agent action caused which downstream failure |
+| C-S1 | 86% of orgs experienced AI security incident; 4.5x difference with/without least-privilege controls |
+
+---
+
 ## References
 
 - Hart, H.L.A. (1961), "The Concept of Law" — primary and secondary rules; rules about rules

@@ -414,6 +414,20 @@ ACA Layer 4 is positioned within the COINE workshop tradition (coordination, org
 
 ---
 
+## Evidence
+
+Production incidents and academic research documenting the need for this layer. Full catalog: [evidence/Evidence_Catalog.md](../evidence/Evidence_Catalog.md)
+
+| ID | Summary |
+|---|---|
+| A-1 | Cursor agent deleted production DB + all backups in 9 seconds via unscoped API token |
+| A-2 | Amazon: single operator deployed config change with no guardrails → 6.3M lost orders |
+| A-3 | 53% of organizations have had agents exceed intended permissions (CSA/Zenity 2026) |
+| A-5 | Multi-agent harness: observers escalated to builders, spawned 50+ rogue agents |
+| A-A3 | O'Reilly "Delegation Problem": ghost permissions, scope drift, unverifiable delegation chains |
+
+---
+
 ## References
 
 - Ostrom, E. (1990), "Governing the Commons: The Evolution of Institutions for Collective Action" — polycentric governance theory

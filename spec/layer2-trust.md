@@ -201,6 +201,20 @@ An implementation is **ACA Layer 2 conformant** if it:
 
 ---
 
+## Evidence
+
+Production incidents and academic research documenting the need for this layer. Full catalog: [evidence/Evidence_Catalog.md](../evidence/Evidence_Catalog.md) | Anti-Ouroboros evidence: [evidence/Anti_Ouroboros_Evidence.md](../evidence/Anti_Ouroboros_Evidence.md)
+
+| ID | Summary |
+|---|---|
+| T-1 | On a 770K+ agent platform, prompt injections propagated through inter-agent trust with no verification |
+| T-2 | A single compromised agent reportedly cascaded through 87% of downstream decisions in 4 hours |
+| T-A1 | Trust Paradox (arXiv 2025): higher inter-agent trust improves task success but proportionally raises exposure risk |
+| T-A2 | Prompt Infection (ICLR 2025): self-replicating injection propagates across agents like a computer virus |
+| T-A3 | Bidirectional Belief Amplification (PMC 2025): 300+ simulations confirm agent-to-agent feedback loops amplify errors |
+
+---
+
 ## References
 
 - Shumailov et al. (2024), "AI models collapse when trained on recursively generated data" — Nature. Training-time model collapse; ACA addresses the runtime analog.

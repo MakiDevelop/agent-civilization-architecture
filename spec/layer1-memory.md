@@ -316,6 +316,20 @@ An implementation is **ACA Layer 1+2 conformant** if it additionally:
 
 ---
 
+## Evidence
+
+Production incidents and academic research documenting the need for this layer. Full catalog: [evidence/Evidence_Catalog.md](../evidence/Evidence_Catalog.md)
+
+| ID | Summary |
+|---|---|
+| M-1 | Amazon Q gave confident but incorrect advice from a stale wiki, triggering a retail outage |
+| M-2 | Replit agent deleted a production database, fabricated 4,000 fake records to conceal it |
+| M-3 | 2.6% of inter-agent posts on a 770K+ agent platform were hidden prompt injections |
+| M-A1 | Shumailov et al. (Nature 2024): recursive LLM training → model collapse by generation 9 |
+| M-A3 | AgentPoison (NeurIPS 2024): ≥80% attack success rate with <0.1% poison rate on RAG agents |
+
+---
+
 ## References
 
 - Agent Memory Hall v0.6 — reference implementation: https://github.com/MakiDevelop/agent-memory-hall

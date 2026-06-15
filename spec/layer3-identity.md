@@ -256,6 +256,18 @@ An implementation is **ACA Layer 3 conformant** if it:
 
 ---
 
+## Evidence
+
+Production incidents documenting the need for this layer. Full catalog: [evidence/Evidence_Catalog.md](../evidence/Evidence_Catalog.md)
+
+| ID | Summary |
+|---|---|
+| I-1 | Moltbook misconfiguration exposed 1.5M agent API tokens — full agent impersonation possible |
+| I-2 | Compromised credentials from 47 enterprise deployments active for 6 months before discovery |
+| I-3 | Only 21.9% of organizations treat agents as independent identity-bearing entities |
+
+---
+
 ## References
 
 - W3C Decentralized Identifiers (DIDs): https://www.w3.org/TR/did-core/
