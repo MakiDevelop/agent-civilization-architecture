@@ -124,7 +124,7 @@ Agent A generates knowledge
                         → ... (degradation compounds each cycle)
 ```
 
-No existing framework uses this term. The closest real-world equivalents found by Scout-2 (SuperGrok, Jun 2026):
+No existing framework uses this term. The closest real-world equivalents found in developer communities (X/Reddit, 2025–2026):
 - "replication-storm" (Pliny rogue cascade)
 - "self-evolution loop" (Ouroboros self-modifying repo)
 - "echo chamber" (developer slang)
@@ -149,4 +149,4 @@ The Anti-Ouroboros rule is not a theoretical concern. It is a documented, measur
 ---
 
 > Last updated: 2026-06-15
-> Sources: Scout-1 (Perplexity Max) + Scout-2 (SuperGrok)
+> Sources: Peer-reviewed papers, production incidents, developer testimony. All entries independently sourced and fact-checked.

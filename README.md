@@ -171,4 +171,4 @@ npx @chibakuma/agent-memory-hall serve
 
 **Makito Chiba** — [GitHub](https://github.com/MakiDevelop) | [Blog](https://blog.chibakuma.com)
 
-Built from operational experience running a seven-agent council across 60+ collaborative sessions. ACA operationalizes the [COINE community's](https://coin-workshop.github.io/) decade of governance research for LLM-native multi-agent systems.
+ACA operationalizes the [COINE community's](https://coin-workshop.github.io/) decade of governance research for LLM-native multi-agent systems.

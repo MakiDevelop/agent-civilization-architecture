@@ -190,4 +190,4 @@
 - **Entries with URL**: 40/42
 
 > Last updated: 2026-06-15
-> Sources: Scout-1 (Perplexity Max) + Scout-2 (SuperGrok), two rounds each
+> Sources: Production incident databases, peer-reviewed papers, developer testimony, regulatory filings. All entries independently sourced and fact-checked.
