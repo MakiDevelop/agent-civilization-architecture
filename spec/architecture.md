@@ -81,34 +81,33 @@ This parallel is not a metaphor. It is a design guide. Human civilizations conve
 
 ---
 
-## 2. The Six-Layer Architecture
+## 2. The Five-Layer Architecture with Governance Plane
 
-Agent Civilization Architecture defines six layers. Each layer addresses one civilizational question. Each layer depends only on the layers below it.
+Agent Civilization Architecture defines five operational layers and one cross-cutting governance plane. Each operational layer addresses one civilizational question. Each layer depends only on the layers below it. The Constitution Plane constrains all layers.
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Layer 6: CONSTITUTION                                  │
-│  How do the rules evolve?                               │
-├─────────────────────────────────────────────────────────┤
-│  Layer 5: DECISION                                      │
-│  How does the organization decide?                      │
-├─────────────────────────────────────────────────────────┤
-│  Layer 4: AUTHORITY                                     │
-│  Who has the right to decide?                           │
-├─────────────────────────────────────────────────────────┤
-│  Layer 3: IDENTITY                                      │
-│  Who belongs? Who can act?                              │
-├─────────────────────────────────────────────────────────┤
-│  Layer 2: TRUST                                         │
-│  What does the organization believe?                    │
-├─────────────────────────────────────────────────────────┤
-│  Layer 1: MEMORY                                        │
-│  What does the organization remember?                   │
-├─────────────────────────────────────────────────────────┤
-│  Transport: MCP / A2A / REST / File I/O                 │
-│  (Not part of this protocol — use existing standards)   │
-└─────────────────────────────────────────────────────────┘
+┌─ Governance Plane: CONSTITUTION ─────────────────────────┐
+│  Constrains all layers. Rules about rules.               │
+│  Amendment process, knowledge promotion, decay detection │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  Layer 5: DECISION — How does the organization decide?   │
+│                                                          │
+│  Layer 4: AUTHORITY — Who has the right to decide?       │
+│                                                          │
+│  Layer 3: IDENTITY — Who belongs? Who can act?           │
+│                                                          │
+│  Layer 2: TRUST — What does the organization believe?    │
+│                                                          │
+│  Layer 1: MEMORY — What does the organization remember?  │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  Transport: MCP / A2A / REST / File I/O                  │
+│  (Not part of this protocol — use existing standards)    │
+└──────────────────────────────────────────────────────────┘
 ```
+
+**Why Constitution is a Plane, not a Layer**: A constitution does not sit "above" the other layers — it *constrains* all of them. Just as a national constitution governs how laws are made (Decision), who holds power (Authority), and what rights citizens have (Identity), the Constitution Plane defines meta-rules that cut across every operational layer. Placing it as a layer would imply that only the layer below it (Decision) interacts with it; in reality, constitutional constraints apply to Memory (what can be permanently recorded), Trust (what tier transitions are permitted), Identity (how new principals are admitted), Authority (how roles are created or dissolved), and Decision (what quorum is required).
 
 ### Layer 1: Memory — What does the organization remember?
 
@@ -255,7 +254,7 @@ A decision is NOT a memory. It is a state machine that spans multiple memories. 
 
 **Reference implementation**: Not yet formalized. Operational precedent exists in the author's ACE Protocol (Agent Council Engine) and DEC system (ratified decision records).
 
-### Layer 6: Constitution — How do the rules evolve?
+### Governance Plane: Constitution — How do the rules evolve?
 
 **Civilizational analog**: Constitutional law, amendment process, judicial interpretation.
 
@@ -270,7 +269,7 @@ candidate → accepted → canonical → archived | expired
 
 A `candidate` memory is freshly written, unverified. An `accepted` memory has passed trust verification and can be referenced by the team. A `canonical` memory is organizational knowledge — the equivalent of settled law. Not every memory should be promoted; most should remain at the `candidate` level and eventually expire.
 
-**Amendment Process** — any change to Layers 4-6 (Authority, Decision, Constitution) MUST go through a structured proposal-and-ratification cycle, not unilateral modification. This prevents a single agent from rewriting the rules that govern it — the civilizational equivalent of separation of powers.
+**Amendment Process** — any change to Layers 4-5 (Authority, Decision) or the Constitution Plane itself MUST go through a structured proposal-and-ratification cycle, not unilateral modification. This prevents a single agent from rewriting the rules that govern it — the civilizational equivalent of separation of powers.
 
 **Governance Decay Detection** — rules that are never invoked, roles that are never exercised, and trust policies that are never tested should be flagged for review. Institutions that are not exercised atrophy.
 
@@ -367,21 +366,34 @@ The transport layer of ACA is deliberately protocol-agnostic. A memory record ca
 | Layer 2: Trust | ProvenanceChain on transfer | Not yet |
 | Layer 3: Identity | Namespace isolation | Implemented (basic) |
 | Layer 3: Identity | NamespaceACL with grant/revoke | Not yet |
-| Layer 4-6 | Authority, Decision, Constitution | Not yet formalized |
+| Layer 4-5 | Authority, Decision | Not yet formalized |
+| Governance Plane | Constitution | Not yet formalized |
 
-The protocol specification has operational precedent. The author has operated a seven-agent council (Claude, Codex, Gemini, Perplexity, SuperGrok, Gemma, Grok) across sixty collaborative sessions, using a governance system that implements all six layers in a non-portable, single-operator form. This operational experience informs the architecture but is not the architecture itself.
+The protocol specification has operational precedent. The author has operated a seven-agent council (Claude, Codex, Gemini, Perplexity, SuperGrok, Gemma, Grok) across sixty collaborative sessions, using a governance system that implements all five layers and the Constitution Plane in a non-portable, single-operator form. This operational experience informs the architecture but is not the architecture itself.
 
 ### Roadmap
+
+#### Protocol Development
 
 | Phase | Deliverable | Timeline |
 |---|---|---|
 | **v0.1 Spec** | This document. Problem definition + layer architecture. | June 2026 |
-| **v1.0 Spec** | Formal specification of Layer 1 (Memory) + Layer 2 (Trust) + Layer 3 (Identity) interfaces. Conformance test suite. | Q3 2026 |
+| **v1.0 Spec** | Formal specification of Layer 1 (Memory) + Layer 2 (Trust) + Layer 3 (Identity) contracts. Conformance test suite. | Q3 2026 |
 | **v1.0 Ref Impl** | AMH upgraded: TierGate interface, NamespaceACL, ProvenanceChain, conformance-passing reference implementation. | Q3 2026 |
 | **Extension RFC: Authority** | Layer 4 specification. Role Manifest, Chair Mechanism, Escalation Trigger, Mandatory Dissent. | Q4 2026 |
 | **Extension RFC: Decision** | Layer 5 specification. Decision Proposal, Consensus Result, Decision Lifecycle state machine. | Q1 2027 |
-| **Extension RFC: Constitution** | Layer 6 specification. Knowledge Promotion, Amendment Process, Governance Decay Detection. | Q2 2027 |
+| **Extension RFC: Constitution** | Constitution Plane specification. Knowledge Promotion, Amendment Process, Governance Decay Detection. | Q2 2027 |
 | **Multi-language Bindings** | Python + Rust conformance-passing implementations. | 2027 |
+
+#### Academic Publication
+
+| Target Venue | Submission | Focus |
+|---|---|---|
+| **COINE @ AAMAS 2027** | Feb 2027 (estimated) | Full paper: ACA as first protocol-level instantiation of COINE's governance requirements for LLM-native MAS |
+| **WMAC @ AAAI 2027** | Oct 2026 (estimated) | Position paper: Organizational Cognition for Multi-Agent Systems |
+| **NeurIPS SEA Workshop 2026** | Sep 2026 (estimated) | Short paper: Anti-Ouroboros Rule — distinguishing runtime belief amplification from training-time model collapse |
+
+Academic positioning: *"Organizational Cognition for Multi-Agent Systems: A Layered Architecture for Memory, Trust, Authority, and Collective Decision-Making"* — framing ACA as the first open protocol that operationalizes the COINE community's decade of governance research for LLM-native multi-agent systems.
 
 ---
 
@@ -393,7 +405,7 @@ Three conditions make this architecture timely:
 
 **The protocol layer is receptive.** MCP's rapid adoption (2024-2025) proved that developers will adopt open protocols over proprietary solutions when the protocol solves a real problem. The infrastructure for protocol-based agent systems exists; the governance protocol does not.
 
-**Regulatory pressure is arriving.** The EU AI Act (2024/1689) requires that AI systems operating in high-risk domains be auditable, explainable, and subject to human oversight. No existing agent framework provides the governance infrastructure to meet these requirements at the organizational level. A protocol that makes governance auditable by design has structural regulatory advantage.
+**Regulatory pressure is arriving.** The EU AI Act (Regulation 2024/1689, Chapter III fully effective August 2026) imposes specific requirements that map directly to ACA's layers: Article 9 (risk management → Decision Layer), Article 12 (automatic logging with six-month retention → Memory Layer provenance), Article 13 (transparency of outputs → Trust Layer source tier), Article 14 (human oversight with five defined capabilities → Authority Layer). No existing agent framework provides the governance infrastructure to meet these requirements at the organizational level. A protocol that makes governance auditable by design has structural regulatory advantage.
 
 The window will not stay open. Platform vendors will eventually ship proprietary governance features. When they do, the question will be whether an open standard already exists — one that enterprises, developers, and regulators can point to as the neutral alternative.
 
