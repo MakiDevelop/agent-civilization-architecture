@@ -1,6 +1,6 @@
 # Layer 5: Decision — Protocol Specification
 
-**Status**: Draft v0.1 — June 2026
+**Status**: Draft v0.2 — June 2026
 
 **Civilizational analog**: Legislative process, executive orders, judicial review
 
@@ -16,7 +16,7 @@ A decision is NOT a memory. It is a **state machine** that spans multiple Memory
 
 **Design principle**: Every decision produces an auditable record of what was proposed, what evidence was considered, who reviewed, who dissented, who ratified, and what the implementation plan is. Decisions without this record are not decisions — they are actions.
 
-**Relationship to Layer 4**: Layer 4 defines the capability gates (`propose_decision`, `ratify_decision`, `veto_decision`) and the Independent Review mechanism. Layer 5 defines the state machine that these capabilities operate on, and the `critical` classification that triggers mandatory review.
+**Relationship to Layer 4**: Layer 4 defines the capability gates (`propose_decision`, `ratify_decision`, `veto_decision`) and the Independent Review mechanism (Layer 4 §2.7). Layer 5 defines the state machine that these capabilities operate on, and the `critical` classification that triggers mandatory review. Independent Review Records (Layer 4) are embedded in the Decision lifecycle at the `under_review` stage.
 
 ---
 
@@ -51,22 +51,27 @@ A Decision is the atomic unit of organizational governance action.
 
   "created_at": "string (ISO 8601)",
   "effective_at": "string | null (ISO 8601, when decision takes effect)",
-  "review_by": "string | null (ISO 8601, mandatory re-evaluation date)",
+  "review_deadline": "string | null (ISO 8601, after which unresolved decision is revoked)",
+  "review_by": "string | null (ISO 8601, mandatory re-evaluation date for in_effect decisions)",
   "supersedes": "string | null (decision_id this replaces)",
   "superseded_by": "string | null (decision_id that replaced this)"
 }
 ```
 
+**Storage**: Decisions are stored in a DecisionStore (analogous to AmhStore for Layer 1). Implementations MAY use the same backing database but MUST maintain separate logical collections. Decisions are NOT MemoryCells and MUST NOT be stored in the memories table.
+
 ### 2.2 Risk Classification
 
 Every decision MUST be classified by risk level. The classification determines which governance mechanisms apply:
 
-| Risk Level | Definition | Requirements |
-|---|---|---|
-| `low` | Reversible, single-scope, no external effect | Proposer may self-ratify (if no `cannot_self_approve` constraint) |
-| `medium` | Reversible but cross-scope, or has external side effects | Requires ratification by a principal other than proposer |
-| `high` | Difficult to reverse, or affects multiple namespaces/teams | Requires ratification + at least one Independent Review |
-| `critical` | Irreversible, modifies governance, or affects production systems | Requires ratification + Independent Review with substance + addressal (Layer 4 §2.7) |
+| Risk Level | Definition | Review | Ratification | Evidence |
+|---|---|---|---|---|
+| `low` | Reversible, single-scope, no external effect | Optional | Self-ratify allowed (skip `under_review`, direct `proposed→ratified`) unless `cannot_self_approve` constraint applies | No formal requirement |
+| `medium` | Reversible but cross-scope, or external side effects | Recommended | Different principal than proposer | ≥1 active MemoryCell |
+| `high` | Difficult to reverse, or multi-namespace | Required: ≥1 Independent Review | Different principal than proposer; reviewer ≠ ratifier | ≥1 `human_confirmed` or `raw_source` MemoryCell |
+| `critical` | Irreversible, governance change, or production | Required: ≥1 Independent Review with substance + addressal | Different principal than proposer; reviewer ≠ ratifier; reviewer ≠ proposer | ≥1 `human_confirmed` MemoryCell; `llm_derived`-only is **blocked** |
+
+**`low` self-ratify shortcut**: For `low` decisions, the proposer MAY ratify immediately (`proposed → ratified`), skipping `under_review`. This shortcut is blocked if the proposer's role carries the `cannot_self_approve` constraint (Layer 4).
 
 **Auto-classification**: Decisions that match Layer 4 escalation triggers are automatically classified:
 - `governance_modification` → `critical`
@@ -74,28 +79,32 @@ Every decision MUST be classified by risk level. The classification determines w
 - `risk_exceeds_threshold` → at least `high`
 - `multi_role_disagreement` → at least `medium`
 
+Auto-classification MAY upgrade but MUST NOT downgrade the proposer's classification.
+
 ### 2.3 Decision Lifecycle
 
 ```
          propose
   ────────────────► proposed
                        │
-                  review / escalate
-                       │
-                       ▼
-                  under_review
-                       │
-              ┌────────┼────────┐
-              │        │        │
-           ratify    veto    timeout
-              │        │        │
-              ▼        │        ▼
-          ratified     │    expired
+              ┌────────┤
               │        │
-         implement     │
+        (low: self-  review
+         ratify)       │
+              │        ▼
+              │   under_review ──── timeout ──► revoked
               │        │
-              ▼        ▼
-          in_effect  revoked
+              │   ┌────┼────┐
+              │   │         │
+              │ ratify    veto
+              │   │         │
+              ▼   ▼         ▼
+           ratified      revoked
+              │
+         implement
+              │
+              ▼
+          in_effect ──── review_by date ──► (re-evaluate: supersede or renew)
               │
          ┌────┴────┐
          │         │
@@ -109,18 +118,19 @@ Every decision MUST be classified by risk level. The classification determines w
 
 | Status | Meaning |
 |---|---|
-| `proposed` | Submitted, awaiting review |
+| `proposed` | Submitted, awaiting review or self-ratification |
 | `under_review` | At least one reviewer or escalation is active |
 | `ratified` | Approved by authorized principal; not yet executed |
 | `in_effect` | Implementation complete; decision is active policy |
 | `superseded` | Replaced by a newer decision |
-| `revoked` | Explicitly invalidated |
+| `revoked` | Explicitly invalidated (by veto, timeout, or explicit revocation) |
 
 **Invariants**:
 - Status transitions are forward-only (no reversion to `proposed` from `under_review`).
-- A vetoed decision transitions directly to `revoked`.
+- A vetoed decision transitions directly to `revoked` with `details: "vetoed"`.
 - `ratified` → `in_effect` requires confirmation that implementation steps are complete.
-- Timeout: a decision in `under_review` past its deadline transitions to `revoked` with `details: "review_timeout"`.
+- Timeout: a decision in `under_review` past its `review_deadline` transitions to `revoked` with `details: "review_timeout"`.
+- `review_by` on `in_effect` decisions is advisory. Implementations SHOULD trigger re-evaluation (propose superseding decision or renew with new evidence).
 
 ### 2.4 RatificationRecord
 
@@ -130,14 +140,15 @@ Every decision MUST be classified by risk level. The classification determines w
   "ratified_role": "string (role_id, must have ratify_decision capability)",
   "ratified_at": "string (ISO 8601)",
   "rationale": "string (why this decision was approved)",
-  "review_addressal": "string (how independent review concerns were addressed)",
+  "review_addressal": "string | null (how independent review concerns were addressed; MUST be non-null for critical)",
   "conditions": ["string (any conditions attached to ratification)"]
 }
 ```
 
 **Invariants**:
-- `ratified_by` MUST NOT equal `proposer_principal_id` for `medium`+ decisions (separation of duties).
-- For `critical` decisions, `review_addressal` MUST reference each Independent Review Record and explain how concerns were mitigated or accepted.
+- `ratified_by` MUST NOT equal `proposer_principal_id` for `medium`+ decisions.
+- For `high`/`critical` decisions, `ratified_by` MUST NOT be the sole reviewer (reviewer ≠ ratifier).
+- For `critical` decisions, `review_addressal` MUST reference each Independent Review Record and explain how concerns were mitigated or accepted as risk.
 
 ### 2.5 EscalationRecord
 
@@ -167,22 +178,22 @@ Submits a new decision for organizational consideration.
 | Aspect | Specification |
 |---|---|
 | **Input** | `title`, `risk_level`, `proposal` (assumptions, evidence_ids, risks, trade_offs, rollback_plan, implementation_steps) |
-| **Pre-conditions** | Caller has `propose_decision` capability (Layer 4). All `evidence_ids` reference existing MemoryCells. |
-| **Processing** | 1. Auto-classify risk level (may upgrade, never downgrade caller's classification). 2. Create Decision record with `status: proposed`. 3. If `critical`, verify at least one suitable reviewer exists. 4. Append AuditEvent. |
+| **Pre-conditions** | Caller has `propose_decision` capability (Layer 4). All `evidence_ids` reference existing, active MemoryCells (expired/revoked evidence is rejected). |
+| **Processing** | 1. Validate evidence exists and is active. 2. Auto-classify risk level (may upgrade, never downgrade). 3. Run Anti-Ouroboros evidence check (§4.3). 4. Create Decision record with `status: proposed`. 5. Append AuditEvent with `correlation_id` linking to `decision_id`. |
 | **Output** | `{ decision_id, status: "proposed", risk_level }` |
 
 ### 3.2 Review Decision
 
-Triggers transition to `under_review` and collects Independent Reviews (Layer 4 §3.6).
+Triggers transition to `under_review` and collects Independent Reviews.
 
 **Contract**:
 
 | Aspect | Specification |
 |---|---|
 | **Input** | `decision_id` |
-| **Pre-conditions** | Decision is in `proposed` status. |
-| **Processing** | 1. Set status to `under_review`. 2. Notify eligible reviewers. 3. Start review deadline timer (configurable, default: 24h for `critical`, 4h for `high`, 1h for `medium`). |
-| **Output** | `{ decision_id, status: "under_review", deadline }` |
+| **Pre-conditions** | Decision is in `proposed` status. Risk level is `medium` or above (low decisions skip review). |
+| **Processing** | 1. Set status to `under_review`. 2. Notify eligible reviewers. 3. Set `review_deadline` (configurable; RECOMMENDED defaults: 24h for `critical`, 4h for `high`, 1h for `medium`). 4. Append AuditEvent. |
+| **Output** | `{ decision_id, status: "under_review", review_deadline }` |
 
 ### 3.3 Ratify Decision
 
@@ -192,8 +203,8 @@ Approves a decision after review.
 
 | Aspect | Specification |
 |---|---|
-| **Input** | `decision_id`, `rationale`, `review_addressal`, `conditions[]` (optional) |
-| **Pre-conditions** | Caller has `ratify_decision` capability. Decision is `under_review`. For `critical`: at least one Independent Review Record exists with substance (Layer 4 §2.7). For `medium`+: caller is NOT the proposer. |
+| **Input** | `decision_id`, `rationale`, `review_addressal` (required for `critical`), `conditions[]` (optional) |
+| **Pre-conditions** | Caller has `ratify_decision` capability. Decision is `proposed` (low self-ratify) or `under_review`. For `high`/`critical`: ≥1 Independent Review Record exists. For `critical`: review has substance per Layer 4 §2.7. For `medium`+: caller ≠ proposer. For `high`+: caller ≠ sole reviewer. Anti-Ouroboros gate passes (§4.3). |
 | **Processing** | 1. Validate all pre-conditions. 2. Create RatificationRecord. 3. Set status to `ratified`. 4. Append AuditEvent. |
 | **Output** | `{ decision_id, status: "ratified" }` |
 
@@ -220,7 +231,7 @@ Confirms that a ratified decision has been executed.
 |---|---|
 | **Input** | `decision_id`, `implementation_notes` |
 | **Pre-conditions** | Decision is `ratified`. Caller has appropriate capabilities for the implementation domain. |
-| **Processing** | 1. Verify implementation steps are addressed. 2. Set status to `in_effect`. 3. Set `effective_at`. 4. Append AuditEvent. |
+| **Processing** | 1. Set status to `in_effect`. 2. Set `effective_at`. 3. Generate MemoryCells per §4.2. 4. Append AuditEvent with `correlation_id`. |
 | **Output** | `{ decision_id, status: "in_effect", effective_at }` |
 
 ### 3.6 Supersede Decision
@@ -231,9 +242,9 @@ Replaces an active decision with a new one.
 
 | Aspect | Specification |
 |---|---|
-| **Input** | New Decision proposal with `supersedes` pointing to the target decision_id. |
-| **Pre-conditions** | Target decision is `in_effect`. New decision goes through the full lifecycle (propose → review → ratify). |
-| **Processing** | 1. On ratification of new decision: set target's status to `superseded`, set target's `superseded_by`. 2. Append AuditEvent for both. |
+| **Input** | New Decision proposal with `supersedes` pointing to the target `decision_id`. |
+| **Pre-conditions** | Target decision is `in_effect`. New decision goes through the full lifecycle. |
+| **Processing** | 1. On ratification of new decision: set target's status to `superseded`, set target's `superseded_by`. 2. Append AuditEvent for both with shared `correlation_id`. |
 | **Output** | `{ new_decision_id, superseded_decision_id }` |
 
 ### 3.7 Revoke Decision
@@ -246,7 +257,7 @@ Explicitly invalidates an active decision.
 |---|---|
 | **Input** | `decision_id`, `reason` |
 | **Pre-conditions** | Decision is `in_effect`. Caller has `veto_decision` capability or is deadlock resolver. |
-| **Processing** | 1. Set status to `revoked`. 2. Append AuditEvent. 3. If decision had downstream effects, log them in `details`. |
+| **Processing** | 1. Set status to `revoked`. 2. Append AuditEvent. |
 | **Output** | `{ decision_id, status: "revoked" }` |
 
 ### 3.8 Query Decisions
@@ -266,59 +277,63 @@ Retrieves decisions by status, risk level, proposer, or date range.
 
 ### 4.1 Evidence Requirements
 
-Decisions reference MemoryCells (Layer 1) as evidence. Evidence quality requirements vary by risk level:
+Decisions reference MemoryCells (Layer 1) as evidence. Evidence quality requirements vary by risk level (see §2.2 table). Additional rules:
 
-| Risk Level | Evidence Requirement |
-|---|---|
-| `low` | No formal evidence required |
-| `medium` | At least one `evidence_id` referencing an active MemoryCell |
-| `high` | Evidence must include at least one `human_confirmed` or `raw_source` MemoryCell |
-| `critical` | Evidence must include at least one `human_confirmed` MemoryCell; `llm_derived`-only evidence is insufficient |
+- All `evidence_ids` MUST reference active MemoryCells. Expired, revoked, or superseded evidence is rejected at proposal time.
+- Evidence MAY be added during `under_review` (reviewers may request additional evidence). Added evidence MUST be audited.
+- For `critical` decisions, at least one evidence MemoryCell MUST be at `human_confirmed` tier. `raw_source` evidence is allowed alongside `human_confirmed` but is insufficient alone for `critical`.
 
 ### 4.2 Decision as Memory Generator
 
-When a decision reaches `in_effect`, the implementation SHOULD create MemoryCells to record:
-- The decision rationale (as `fact` type, `human_confirmed` tier)
+When a decision reaches `in_effect`, the implementation MUST (for `critical`) or SHOULD (for others) create MemoryCells to record:
+- The decision rationale (as `fact` type, `human_confirmed` tier if ratified by human principal)
 - Any constraints introduced by the decision (as `constraint` type)
 - Lessons learned during review (as `lesson` type)
 
-These become part of organizational knowledge and may be referenced as evidence for future decisions.
+Generated MemoryCells MUST include `correlation_id` in their AuditEvent linking back to the `decision_id`.
 
-### 4.3 Anti-Ouroboros Interaction
+### 4.3 Anti-Ouroboros Gate
 
-The Anti-Ouroboros Rule (Layer 2) protects against LLM-derived knowledge self-reinforcement. At the Decision Layer, this means:
-- A decision whose evidence is entirely `llm_derived` MUST be flagged for human review.
-- An agent MUST NOT ratify a decision based solely on its own prior `llm_derived` output.
+The Anti-Ouroboros Rule (Layer 2 §3.1) protects against LLM-derived knowledge self-reinforcement. At the Decision Layer, this rule is **enforceable, not advisory**:
+
+1. **At proposal time**: If all `evidence_ids` reference only `llm_derived` MemoryCells and risk level is `high` or `critical`, the risk level is auto-upgraded to `critical` and a warning is attached: `"evidence_all_llm_derived"`.
+2. **At ratification time**: For `critical` decisions, ratification MUST be **blocked** if all evidence is `llm_derived`. The ratifier must either:
+   - Add `human_confirmed` evidence, OR
+   - Downgrade the decision to `high` with explicit acknowledgment of the llm-only evidence risk in `review_addressal`.
+3. **Proposer self-evidence**: An agent MUST NOT be the sole evidence source for a decision it proposes. If `proposer_principal_id` authored all evidence MemoryCells (checked via `created_by`), the decision requires at least one piece of external evidence.
+
+This gate closes the loop identified in Layer 2's threat model: preventing LLM agents from building self-reinforcing governance decisions on their own generated knowledge.
 
 ---
 
 ## 5. Integration with Other Layers
 
 ### 5.1 Layer 1 (Memory)
-- `evidence_ids` in proposals reference MemoryCells.
-- Ratified decisions generate new MemoryCells (§4.2).
-- Decision records are NOT MemoryCells — they have their own storage and lifecycle.
+- `evidence_ids` reference MemoryCells. Evidence must be active at proposal time.
+- Ratified decisions generate new MemoryCells (§4.2) with `correlation_id` linkage.
+- Decision records are NOT MemoryCells — they have separate storage and lifecycle.
 
 ### 5.2 Layer 2 (Trust)
 - Evidence tier requirements (§4.1) enforce trust quality in decision-making.
-- Anti-Ouroboros interaction (§4.3) prevents LLM self-reinforcement at governance level.
+- Anti-Ouroboros gate (§4.3) is enforceable: blocks `critical` ratification on llm-only evidence.
+- Proposer self-evidence check prevents single-agent closed-loop governance.
 
 ### 5.3 Layer 3 (Identity)
 - `proposer_principal_id` and `ratified_by` must be valid, active Principals.
-- Separation of duties: proposer ≠ ratifier for `medium`+ decisions.
+- Separation of duties enforced by principal identity comparison.
 
 ### 5.4 Layer 4 (Authority)
 - `propose_decision`, `ratify_decision`, `veto_decision` capabilities gate all operations.
-- Independent Review (Layer 4 §2.7) is the review mechanism for `high`/`critical` decisions.
-- Escalation triggers feed from Layer 4 into decision review.
-- `critical` classification triggers Layer 4's mandatory review requirements.
+- Independent Review (Layer 4 §2.7) is embedded at `under_review` stage for `high`/`critical`.
+- `critical` classification triggers Layer 4's mandatory review with independence + substance + addressal.
+- Escalation triggers from Layer 4 auto-upgrade risk classification.
 
 ### 5.5 Backward Compatibility
 
 Layer 5 is OPTIONAL. When not implemented:
 - Organizational decisions are informal (no structured lifecycle).
 - Layer 4 capabilities `propose_decision`, `ratify_decision`, `veto_decision` have no target state machine.
-- Independent Review (Layer 4) can still function for memory operations.
+- Independent Review (Layer 4) can still function for non-decision operations.
 
 ---
 
@@ -328,13 +343,16 @@ An implementation is **ACA Layer 5 conformant** if it:
 
 1. Implements the Decision data model with the six-status lifecycle.
 2. Enforces risk classification with auto-upgrade from escalation triggers.
-3. Enforces separation of duties (proposer ≠ ratifier for `medium`+).
-4. Enforces evidence tier requirements by risk level.
-5. Integrates with Layer 4 Independent Review for `high`/`critical` decisions.
-6. Implements decision timeout (review deadline → revoked).
-7. Supports decision supersession with full lifecycle for the replacement.
-8. Maintains audit trail for all decision operations.
-9. Passes the Layer 5 conformance test suite (forthcoming).
+3. Enforces separation of duties (proposer ≠ ratifier for `medium`+; reviewer ≠ ratifier for `high`+).
+4. Enforces evidence tier requirements by risk level, including stale evidence rejection.
+5. Enforces the Anti-Ouroboros gate at ratification (§4.3): blocks `critical` on llm-only evidence.
+6. Enforces proposer self-evidence check (§4.3.3).
+7. Integrates with Layer 4 Independent Review for `high`/`critical` decisions.
+8. Implements decision timeout (`review_deadline` → `revoked`).
+9. Generates MemoryCells on `in_effect` transition for `critical` decisions (MUST) with `correlation_id`.
+10. Supports decision supersession with full lifecycle for the replacement.
+11. Maintains audit trail for all decision operations with `correlation_id` linking to `decision_id`.
+12. Passes the Layer 5 conformance test suite (forthcoming).
 
 **Note**: Layer 5 conformance requires Layer 1+2+3+4 conformance. The layers are cumulative.
 
@@ -343,9 +361,9 @@ An implementation is **ACA Layer 5 conformant** if it:
 ## References
 
 - Simon, H. (1947), "Administrative Behavior" — bounded rationality in organizational decision-making
-- Janis, I. (1972), "Victims of Groupthink" — groupthink failure modes in decision committees
-- Schwenk, C. (1984), "Devil's Advocacy in Managerial Decision-Making" — structured dissent
-- Kahneman, D. (2011), "Thinking, Fast and Slow" — cognitive biases in judgment and decision-making
+- Janis, I. (1972), "Victims of Groupthink" — groupthink failure modes; Layer 5's Independent Review + SoD are structural countermeasures
+- Schwenk, C. (1984), "Devil's Advocacy in Managerial Decision-Making" — structured dissent; Independent Review operationalizes this
+- Kahneman, D. (2011), "Thinking, Fast and Slow" — cognitive biases; risk classification forces deliberative review over intuitive fast-path
 - COINE Workshop Series — norms and governance for MAS: https://coin-workshop.github.io/
-- EU AI Act (2024), Articles 9, 14 — risk management systems and human oversight
+- EU AI Act (2024), Articles 9, 14 — risk management systems and human oversight requirements
 - Agent Memory Hall v0.8 — reference implementation: https://github.com/MakiDevelop/agent-memory-hall
