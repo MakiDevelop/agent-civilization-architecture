@@ -16,7 +16,7 @@ Agriculture gave us plows, then property law. Industry gave us factories, then c
 
 AI is following the same pattern — but we are stuck in the tools phase. We have tool-calling protocols (MCP), agent-to-agent communication (A2A), and identity specifications (W3C DID). These let agents *work*. But nothing exists to govern how agents *organize* — how they form shared memory, establish trust, delegate authority, reach decisions, and evolve their own rules.
 
-This document argues that as AI agents scale from individuals to organizations, the critical unsolved problem shifts from *agent intelligence* to *agent civilization* — the minimum viable set of institutions that prevents organizational collapse. We define a six-layer architecture for these institutions, grounded in the structural parallel between human civilizational development and multi-agent system governance.
+This document argues that as AI agents scale from individuals to organizations, the critical unsolved problem shifts from *agent intelligence* to *agent civilization* — the minimum viable set of institutions that prevents organizational collapse. We define a five-layer architecture with a cross-cutting governance plane for these institutions, grounded in the structural parallel between human civilizational development and multi-agent system governance.
 
 Agent Memory Hall (AMH) is the first reference implementation of this architecture, currently covering the Memory and Trust layers.
 
@@ -218,7 +218,7 @@ roles:
 - Risk level exceeds threshold
 - Decision is irreversible
 - Multiple roles disagree
-- Decision modifies governance rules (Layer 6)
+- Decision modifies governance rules (Constitution Plane)
 
 **Mandatory Dissent** — for high-risk decisions, at least one role MUST be structurally assigned to challenge the proposal. This is not optional politeness; it is a protocol requirement. A Critical decision without a recorded dissent is a protocol violation.
 
@@ -305,7 +305,7 @@ Agent Civilization Architecture is designed for incremental adoption:
 - **Layer 1 only**: You get structured memory with lifecycle management. Already better than raw vector stores.
 - **Layer 1 + 2**: You get memory with trust verification. Your agents can distinguish "I generated this" from "a human verified this."
 - **Layer 1 + 2 + 3**: You get memory with trust and access control. Multi-agent systems can share knowledge without pollution.
-- **Layer 1-6**: Full organizational governance. Decisions are auditable, authority is explicit, rules can evolve.
+- **Layer 1-5 + Constitution Plane**: Full organizational governance. Decisions are auditable, authority is explicit, rules can evolve.
 
 Each layer is independently useful. No layer requires the layers above it.
 
@@ -438,6 +438,6 @@ This document and the Agent Civilization Architecture specification are released
   year={2026},
   month={June},
   version={0.1},
-  url={https://github.com/MakiDevelop/agent-memory-hall}
+  url={https://github.com/MakiDevelop/agent-civilization-architecture}
 }
 ```

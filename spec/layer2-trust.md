@@ -97,13 +97,21 @@ When a MemoryCell is transferred (Layer 1 §3.5) or superseded (Layer 1 §3.3), 
 
 **Rule**: An `llm_derived` MemoryCell MUST NOT supersede another `llm_derived` MemoryCell without human intervention.
 
-```
-llm_derived ──supersede──► llm_derived    ✗ BLOCKED
-llm_derived ──supersede──► raw_source     ✓ allowed
-human_confirmed ──supersede──► llm_derived ✓ allowed
-human_confirmed ──supersede──► human_confirmed ✓ allowed
-raw_source ──supersede──► llm_derived     ✓ allowed
-```
+**Direction convention**: *candidate* is the new record; *target* is the existing record being superseded. Read as: "candidate supersedes target."
+
+| Target (existing) | Candidate (new) | Allowed? |
+|---|---|---|
+| `llm_derived` | `llm_derived` | **✗ BLOCKED** |
+| `raw_source` | `llm_derived` | ✓ allowed |
+| `llm_derived` | `human_confirmed` | ✓ allowed |
+| `human_confirmed` | `human_confirmed` | ✓ allowed |
+| `llm_derived` | `raw_source` | ✓ allowed |
+| `raw_source` | `raw_source` | ✓ allowed |
+| `raw_source` | `human_confirmed` | ✓ allowed |
+| `human_confirmed` | `llm_derived` | ✓ allowed |
+| `human_confirmed` | `raw_source` | ✓ allowed |
+
+**Threat model boundary**: The Anti-Ouroboros Rule specifically guards the `supersede` operation. It does NOT guard against: (a) parallel writes of semantically equivalent `llm_derived` records with different `content_hash`; (b) RAG systems feeding old `llm_derived` content as context for new `llm_derived` writes (context pollution); (c) transfer-based belief propagation. These are real threats but are outside the scope of this protocol-level gate. Implementations SHOULD layer additional safeguards (e.g., semantic dedup, RAG tier labeling per §4.1) to address them.
 
 **Contract**:
 
