@@ -1,14 +1,45 @@
 # Agent Civilization Architecture
 
-**An Infrastructure Protocol for AI Organizations**
+**An open governance protocol for multi-agent AI systems**
+
+**v0.2** — 5 layer specs + governance plane + 34 conformance tests + [42 documented evidence entries](evidence/)
+
+| Component | Specification | Tests | Reference Impl |
+|---|---|---|---|
+| Layer 1: Memory | [Spec](spec/layer1-memory.md) | [8 tests](conformance/layer1/) | [AMH v0.8](https://github.com/MakiDevelop/agent-memory-hall) |
+| Layer 2: Trust | [Spec](spec/layer2-trust.md) | [5 tests](conformance/layer2/) | AMH v0.8 |
+| Layer 3: Identity | [Spec](spec/layer3-identity.md) | [6 tests](conformance/layer3/) | AMH v0.8 |
+| Layer 4: Authority | [Spec](spec/layer4-authority.md) | [6 tests](conformance/layer4/) | Planned |
+| Layer 5: Decision | [Spec](spec/layer5-decision.md) | [5 tests](conformance/layer5/) | Planned |
+| Governance Plane | [Spec](spec/governance-plane.md) | [4 tests](conformance/governance/) | Planned |
+
+## Quick Start
+
+```bash
+# Try the reference implementation (Layer 1-3)
+npx @chibakuma/agent-memory-hall serve
+
+# Run conformance tests against your own implementation
+# 1. Implement AcaTestAdapter interface
+# 2. npm test
+```
+
+See [conformance/README.md](conformance/README.md) for the adapter interface.
 
 ---
 
-Every major coordination technology produces the same pattern: first we build tools, then we build institutions.
+## The Problem
 
-AI agents can call tools (MCP), communicate with each other (A2A), and present identities (W3C DID). But nothing governs how agents *organize* — how they form shared memory, establish trust, delegate authority, reach decisions, and evolve their own rules.
+Multi-agent systems don't fail from intelligence — they fail from governance:
 
-Agent Civilization Architecture (ACA) defines a five-layer protocol with a cross-cutting governance plane — the minimum viable institutions that multi-agent systems need to function as organizations without collapse.
+- **53%** of organizations have had agents exceed their intended permissions ([CSA/Zenity, 2026](evidence/Evidence_Catalog.md))
+- **88%** of organizations report confirmed or suspected agent security incidents ([Gravitee, 2026](evidence/Evidence_Catalog.md))
+- A single compromised agent can cascade through downstream decision-making within hours ([evidence](evidence/Evidence_Catalog.md))
+- Recursive LLM-derived data causes irreversible model collapse by generation 9 ([Shumailov et al., Nature 2024](evidence/Anti_Ouroboros_Evidence.md))
+
+Agent frameworks (LangChain, CrewAI) solve coordination. Agent platforms (OpenAI, Anthropic, Google) solve deployment. **Nobody is solving governance.**
+
+ACA defines the minimum viable institutions — memory, trust, identity, authority, decisions, and constitutional governance — that multi-agent systems need to function as organizations without collapse.
 
 ```
 ┌─ Governance Plane: CONSTITUTION ─────────────────────────┐
@@ -30,16 +61,6 @@ Agent Civilization Architecture (ACA) defines a five-layer protocol with a cross
 │  Transport: MCP / A2A / REST / File I/O                  │
 └──────────────────────────────────────────────────────────┘
 ```
-
-## Why
-
-As agents scale from 1 to 10 to 1,000, the critical problem shifts from *intelligence* to *civilization*. Without institutions, agent societies fail in the same ways human societies fail: memory corruption, trust collapse, authority disputes, consensus breakdown, and ungovernable rule drift.
-
-No existing framework, platform, or protocol addresses this. Agent frameworks (LangChain, CrewAI) solve coordination. Agent platforms (OpenAI, Anthropic, Google) solve deployment. **Nobody is solving governance.**
-
-## Status
-
-**v0.2 — All Specs Complete + 30 Conformance Tests** (June 2026)
 
 | Component | Specification | Conformance Tests | Reference Implementation |
 |---|---|---|---|
