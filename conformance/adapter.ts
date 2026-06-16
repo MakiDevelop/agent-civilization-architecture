@@ -340,6 +340,59 @@ export interface AcaDecisionAdapter {
   cleanup(): Promise<void>;
 }
 
+// --- L5.obligation: Work-State Sub-Layer (RFC-001) ---
+
+export type ObligationStatus = "pending" | "in_progress" | "blocked" | "stale" | "closed" | "abandoned";
+export type ActionType = "refresh_evidence" | "query_owner" | "escalate" | "read" | "summarize" | "route_attention" | "propose_low_risk" | string;
+
+export interface ObligationPacket {
+  obligation_id: string;
+  promise: string;
+  owner: string;
+  fallback_owner: string;
+  status: ObligationStatus;
+  evidence: Array<{ ref: string; result: string }>;
+  missing_evidence: string[];
+  blocked_by: string[];
+  stale_if: { type: "ttl"; seconds: number } | { type: "external_condition"; ref: string };
+  allowed_next_actions: ActionType[];
+  created_at: string;
+  last_touched_at: string;
+}
+
+export interface PolicyEvaluation {
+  risk_tier: RiskLevel;
+  operation_permissions: string[];
+  evaluator_id: string;
+  evaluated_at: string;
+  policy_version: string;
+  evaluator_scope: string;
+  evidence_refs: string[];
+}
+
+export interface ObligationResult {
+  obligation_id: string;
+  status: ObligationStatus;
+}
+
+export interface AcaObligationAdapter {
+  createObligation(packet: ObligationPacket, evaluation: PolicyEvaluation): Promise<ObligationResult>;
+
+  closeObligation(obligationId: string, actorId: string, actorSourceTier: "raw_source" | "llm_derived" | "human_confirmed", evidence: string[]): Promise<ObligationResult>;
+
+  updateStatus(obligationId: string, newStatus: ObligationStatus, actorId: string): Promise<ObligationResult>;
+
+  readObligation(obligationId: string): Promise<ObligationPacket | null>;
+
+  evaluateStale(obligationId: string, evaluatorId: string): Promise<{ obligation_id: string; is_stale: boolean }>;
+
+  getEvaluation(obligationId: string): Promise<PolicyEvaluation | null>;
+
+  writeToSurface(obligationId: string, surface: string, actorId: string): Promise<{ allowed: boolean; reason?: string }>;
+
+  cleanup(): Promise<void>;
+}
+
 // --- Governance Plane ---
 
 export type RuleCategory = "immutable" | "structural" | "operational";
