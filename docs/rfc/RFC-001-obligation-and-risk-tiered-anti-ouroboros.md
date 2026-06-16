@@ -1,6 +1,6 @@
 # RFC-001: Obligation Sub-Layer + Risk-Tiered Anti-Ouroboros
 
-> Status: **DRAFT v2** — incorporating reviewer feedback
+> Status: **DRAFT v3** — self-evaluator refusal + break-glass + anti-gaming
 > Author: Makito Chiba (@MakiDevelop)
 > Origin: Reddit r/AI_Agents feedback from u/Effective_Iron2146 (2026-06-16)
 > Reviewed by: GPT-5.4 (engineering), Gemini 3.1 Pro (architecture), Grok (edge cases), gemma4:31b (minimalism)
@@ -128,13 +128,39 @@ The Policy Evaluator is defined as a **role**, not a concrete component. Impleme
 
 ```typescript
 interface PolicyEvaluation {
+  // === Permission Proof (required for permission validity, not just audit) ===
   risk_tier: 'low' | 'medium' | 'high' | 'critical';
   operation_permissions: OperationPermission[];
   evaluator_id: AgentId;              // MUST differ from the acting agent
   evaluated_at: ISO8601;
+  policy_version: string;             // prevents rollback attacks
+  evaluator_scope: string;            // what the evaluator is authorized to evaluate
   evidence_refs: EvidenceRef[];       // basis for the risk assessment
 }
 ```
+
+**Permission proof, not audit metadata.** The fields `evaluator_id`, `evaluated_at`, `policy_version`, and `evaluator_scope` are part of the permission proof — they determine whether an action is authorized, not merely who authorized it after the fact. A PolicyEvaluation missing any of these fields MUST be treated as invalid (no permission-bearing action is allowed).
+
+#### Self-Evaluator Rejection Invariant
+
+> **An acting agent MUST NOT be its own Policy Evaluator.** If `evaluator_id == acting agent's agent_id`, or `evaluator_id` is missing, or `evaluated_at` exceeds the evaluator TTL, the evaluation is invalid. No permission-bearing action is allowed; the only permitted actions are: refresh evaluator, query owner, or escalate.
+
+This enforces separation of duties (Saltzer & Schroeder 1975, "four-eyes principle") at the protocol level. An agent that can both act and evaluate itself can bypass all operation permissions.
+
+#### Anti-Gaming Constraints
+
+- **Puppet evaluator prohibition:** `evaluator_id` MUST reference an agent with an independent identity in L3 Identity, not a sub-agent or alias created by the acting agent. Implementations SHOULD verify evaluator independence through the governance plane.
+- **Policy version rollback:** `policy_version` MUST be monotonically increasing. An evaluation citing an older policy_version than the current governance plane version MUST be rejected.
+- **Evaluation TTL:** `evaluated_at` has a configurable TTL. Expired evaluations MUST be refreshed before permission-bearing actions proceed.
+
+#### Break-Glass Mechanism
+
+When the Policy Evaluator is unavailable (offline, crashed, unreachable), all permission-bearing actions are blocked — creating a potential single point of failure. To prevent system-wide deadlock:
+
+- A designated **break-glass authority** (typically human or governance plane) MAY override the evaluator requirement for a bounded time window.
+- Break-glass activations MUST be logged with: `break_glass_authority`, `activated_at`, `expires_at`, `justification`.
+- Break-glass MUST NOT be self-activated by the acting agent.
+- All actions taken under break-glass MUST be retroactively reviewed when the evaluator recovers.
 
 Risk tier for an operation MUST be assigned by the Policy Evaluator at obligation creation time. The agent MUST NOT self-assess risk tier at execution time.
 
@@ -203,14 +229,31 @@ Tests assert state transitions, not prose.
 - Write is rejected or ignored
 - Stale evaluation only succeeds when performed by external evaluator
 
+### Test 5: Self-Evaluator Refusal (REQUIRED)
+
+**Setup:** ObligationPacket where PolicyEvaluation has one of:
+- `evaluator_id` == acting agent's `agent_id`
+- `evaluator_id` is missing
+- `evaluated_at` exceeds evaluator TTL
+
+Evidence and packet shape are otherwise valid.
+
+**Pass criteria (all must hold):**
+- No permission-bearing action is executed
+- `allowed_next_actions` is restricted to: refresh evaluator, query owner, or escalate
+- Obligation `status` does NOT change to `closed`
+- If the agent attempts a permission-bearing action, it is rejected with an evaluator-separation error
+
+**Rationale:** This catches the case where the packet shape looks correct but the authority boundary has collapsed because the acting agent effectively evaluated itself. Without this test, an agent can self-approve by being both actor and evaluator.
+
 ---
 
 ## Ship Plan
 
 | Version | Scope |
 |---|---|
-| **v0.3** | L5.obligation with 12 core fields + risk-tiered AO operation permissions + Policy Evaluator interface + Tests 1, 2, 3 |
-| **v0.4** | Extended fields + Test 4 + steward heartbeat watchdog implementation + cross-obligation dependency graph |
+| **v0.3** | L5.obligation with 12 core fields + risk-tiered AO operation permissions + Policy Evaluator interface + Tests 1, 2, 3, 5 |
+| **v0.4** | Extended fields + Test 4 + steward heartbeat watchdog + break-glass implementation + cross-obligation dependency graph |
 
 ---
 
@@ -226,6 +269,7 @@ Tests assert state transitions, not prose.
 
 ## Changelog
 
+- **v3 (2026-06-16)**: Self-Evaluator Refusal invariant + Test 5. PolicyEvaluation fields upgraded from audit metadata to permission proof (evaluator_id, evaluated_at, policy_version, evaluator_scope). Anti-gaming constraints (puppet evaluator, policy rollback, evaluation TTL). Break-glass mechanism for evaluator unavailability. Test 5 added to v0.3 ship plan.
 - **v2 (2026-06-16)**: Incorporated u/Effective_Iron2146 review. Core fields 5→12. Added stale-permission invariant. Formalized Policy Evaluator as role/interface. Added Test 3 (stale-permission invalidation). Resolved all three open questions.
 - **v1 (2026-06-16)**: Initial draft. 5 core + 7 optional fields. Three open questions.
 
