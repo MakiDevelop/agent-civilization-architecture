@@ -1,6 +1,6 @@
 # RFC-001: Obligation Sub-Layer + Risk-Tiered Anti-Ouroboros
 
-> Status: **DRAFT v3** — self-evaluator refusal + break-glass + anti-gaming
+> Status: **DRAFT v4** — borrowed-authority replay binding
 > Author: Makito Chiba (@MakiDevelop)
 > Origin: Reddit r/AI_Agents feedback from u/Effective_Iron2146 (2026-06-16)
 > Reviewed by: GPT-5.4 (engineering), Gemini 3.1 Pro (architecture), Grok (edge cases), gemma4:31b (minimalism)
@@ -162,6 +162,14 @@ When the Policy Evaluator is unavailable (offline, crashed, unreachable), all pe
 - Break-glass MUST NOT be self-activated by the acting agent.
 - All actions taken under break-glass MUST be retroactively reviewed when the evaluator recovers.
 
+#### Borrowed-Authority Replay Prevention
+
+PolicyEvaluation MUST include `bound_obligation_id` matching the obligation it authorizes. An evaluation bound to obligation A MUST NOT authorize actions on obligation B. Reuse attempts MUST be recorded as `attempted_authority_reuse` in the audit trail.
+
+**v0.3 scope:** `bound_obligation_id` binding + audit logging.
+
+**v0.4 scope (deferred):** canonical evidence hashing (RFC 8785 JCS for JSON normalization), scope + nonce binding (cross-tenant replay prevention), obligation_state_hash binding (state evolution replay prevention), conditional evaluation cache (5s TTL when evidence_hash + target + actions unchanged).
+
 Risk tier for an operation MUST be assigned by the Policy Evaluator at obligation creation time. The agent MUST NOT self-assess risk tier at execution time.
 
 Rationale: if agents self-classify risk, they can decompose a high-risk operation into N "low-risk" sub-operations to bypass the closure restriction (gaming attack identified in adversarial review).
@@ -252,8 +260,8 @@ Evidence and packet shape are otherwise valid.
 
 | Version | Scope |
 |---|---|
-| **v0.3** | L5.obligation with 12 core fields + risk-tiered AO operation permissions + Policy Evaluator interface + Tests 1, 2, 3, 5 |
-| **v0.4** | Extended fields + Test 4 + steward heartbeat watchdog + break-glass implementation + cross-obligation dependency graph |
+| **v0.3** | L5.obligation with 12 core fields + risk-tiered AO operation permissions + Policy Evaluator interface + bound_obligation_id + Tests 1, 2, 3, 5, 6 |
+| **v0.4** | Extended fields + Test 4 + steward heartbeat watchdog + break-glass implementation + canonical evidence hashing + scope/nonce binding + obligation_state_hash + conditional eval cache + cross-obligation dependency graph |
 
 ---
 
@@ -269,6 +277,7 @@ Evidence and packet shape are otherwise valid.
 
 ## Changelog
 
+- **v4 (2026-06-16)**: Borrowed-authority replay prevention. PolicyEvaluation gains `bound_obligation_id`. Test 6 added. v0.3/v0.4 scope split for advanced binding (canonical hash, scope, nonce, state_hash, conditional cache deferred to v0.4).
 - **v3 (2026-06-16)**: Self-Evaluator Refusal invariant + Test 5. PolicyEvaluation fields upgraded from audit metadata to permission proof (evaluator_id, evaluated_at, policy_version, evaluator_scope). Anti-gaming constraints (puppet evaluator, policy rollback, evaluation TTL). Break-glass mechanism for evaluator unavailability. Test 5 added to v0.3 ship plan.
 - **v2 (2026-06-16)**: Incorporated u/Effective_Iron2146 review. Core fields 5→12. Added stale-permission invariant. Formalized Policy Evaluator as role/interface. Added Test 3 (stale-permission invalidation). Resolved all three open questions.
 - **v1 (2026-06-16)**: Initial draft. 5 core + 7 optional fields. Three open questions.

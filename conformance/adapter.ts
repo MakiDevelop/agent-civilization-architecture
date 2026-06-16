@@ -368,6 +368,7 @@ export interface PolicyEvaluation {
   policy_version: string;
   evaluator_scope: string;
   evidence_refs: string[];
+  bound_obligation_id: string;        // MUST match the obligation this evaluation authorizes
 }
 
 export interface ObligationResult {
