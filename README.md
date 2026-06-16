@@ -6,17 +6,17 @@
 
 | Component | Specification | Tests | Reference Impl |
 |---|---|---|---|
-| Layer 1: Memory | [Spec](spec/layer1-memory.md) | [8 tests](conformance/layer1/) | [AMH v0.8](https://github.com/MakiDevelop/agent-memory-hall) |
-| Layer 2: Trust | [Spec](spec/layer2-trust.md) | [5 tests](conformance/layer2/) | AMH v0.8 |
-| Layer 3: Identity | [Spec](spec/layer3-identity.md) | [6 tests](conformance/layer3/) | AMH v0.8 |
-| Layer 4: Authority | [Spec](spec/layer4-authority.md) | [6 tests](conformance/layer4/) | Planned |
-| Layer 5: Decision | [Spec](spec/layer5-decision.md) | [5 tests](conformance/layer5/) | Planned |
+| Layer 1: Memory | [Spec](spec/layer1-memory.md) | [8 tests](conformance/layer1/) | [AMH v0.9](https://github.com/MakiDevelop/agent-memory-hall) |
+| Layer 2: Trust | [Spec](spec/layer2-trust.md) | [5 tests](conformance/layer2/) | AMH v0.9 |
+| Layer 3: Identity | [Spec](spec/layer3-identity.md) | [6 tests](conformance/layer3/) | AMH v0.9 |
+| Layer 4: Authority | [Spec](spec/layer4-authority.md) | [6 tests](conformance/layer4/) | AMH v0.9 |
+| Layer 5: Decision | [Spec](spec/layer5-decision.md) | [5 tests](conformance/layer5/) | AMH v0.9 |
 | Governance Plane | [Spec](spec/governance-plane.md) | [4 tests](conformance/governance/) | Planned |
 
 ## Quick Start
 
 ```bash
-# Try the reference implementation (Layer 1-3)
+# Try the reference implementation (Layer 1-5)
 npx @chibakuma/agent-memory-hall serve
 
 # Run conformance tests against your own implementation
